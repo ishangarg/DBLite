@@ -82,7 +82,6 @@ int main() {
         execute_statement(&statement);
 
     }
-    return 0;
 }
 
 InputBuffer* new_input_buffer(){
