@@ -15,11 +15,36 @@ struct InputBuffer {
     }
 };
 
+typedef enum {
+    META_COMMAND_SUCCESS,
+    META_COMMAND_UNRECOGNIZED_COMMAND
+} MetaCommandResult;
+
+typedef enum {
+    PREPARE_SUCCESS,
+    PREPARE_UNRECOGNIZED_STATEMENT
+} PrepareResult;
+
+typedef enum {
+    STATEMENT_INSERT,
+    STATEMENT_SELECT
+} StatementType;
+
+typedef struct {
+    StatementType type;
+} Statement;
+
+
 InputBuffer* new_input_buffer();
 void print_startup();
 void print_prompt();
 void read_input(InputBuffer*);
 void close_input_buffer();
+MetaCommandResult do_meta_command(InputBuffer*);
+PrepareResult prepare_statement(InputBuffer*, Statement*);
+void execute_statement(Statement*);
+
+
 
 int main() {
     InputBuffer* input_buffer = new_input_buffer();
@@ -27,12 +52,34 @@ int main() {
     while (true){
         print_prompt();
         read_input(input_buffer);
-        if (strcmp(input_buffer->buffer, ".exit") == 0){
-            cout << "Bye!\n";
-            exit(EXIT_SUCCESS);
-        }else{
-            cout << "Unrecognized Command - " << input_buffer->buffer << endl;
+//        if (strcmp(input_buffer->buffer, ".exit") == 0){
+//            cout << "Bye!\n";
+//            exit(EXIT_SUCCESS);
+//        }else{
+//            cout << "Unrecognized Command - " << input_buffer->buffer << endl;
+//        }
+
+        if (input_buffer->buffer[0] == '.'){
+            switch (do_meta_command(input_buffer)) {
+                case META_COMMAND_SUCCESS:
+                    continue;
+                case META_COMMAND_UNRECOGNIZED_COMMAND:
+                    cout << "Unrecognized Command - " << input_buffer->buffer << endl;
+                    continue;
+            }
         }
+
+        Statement statement;
+        switch (prepare_statement(input_buffer, &statement)) {
+            case (PREPARE_SUCCESS):
+                break;
+            case (PREPARE_UNRECOGNIZED_STATEMENT):
+                cout << "Unrecognized keyword at start of " << input_buffer->buffer << endl;
+                        continue;
+
+        }
+
+        execute_statement(&statement);
 
     }
     return 0;
@@ -71,4 +118,37 @@ void read_input(InputBuffer* input_buffer){
 void close_input_buffer(InputBuffer* input_buffer){
     delete input_buffer->buffer;
     delete input_buffer;
+}
+
+MetaCommandResult do_meta_command(InputBuffer* input_buffer){
+    if(strcmp(input_buffer->buffer, ".exit") == 0){
+        cout << "Bye!" << endl;
+        exit(EXIT_SUCCESS);
+    }else{
+        return META_COMMAND_UNRECOGNIZED_COMMAND;
+    }
+}
+
+PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement){
+    if(strncmp(input_buffer->buffer, "insert", 6) == 0){
+        statement->type = STATEMENT_INSERT;
+        return PREPARE_SUCCESS;
+    }
+    if(strcmp(input_buffer->buffer, "select") == 0){
+        statement->type = STATEMENT_SELECT;
+        return PREPARE_SUCCESS;
+    }
+
+    return PREPARE_UNRECOGNIZED_STATEMENT;
+}
+
+void execute_statement(Statement* statement){
+    switch (statement->type) {
+        case (STATEMENT_INSERT):
+            cout << "This is where we do Insert" << endl;
+            break;
+        case (STATEMENT_SELECT):
+            cout << "This is where we do Select" << endl;
+            break;
+    }
 }
