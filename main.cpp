@@ -1,12 +1,10 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include "row.h"
+#include "table.h"
 
 using namespace std;
 
-#define COLUMN_USERNAME_SIZE 32
-#define COLUMN_EMAIL_SIZE 255
 
 struct InputBuffer {
     char* buffer;
@@ -18,6 +16,11 @@ struct InputBuffer {
         free(buffer);  // Free the allocated buffer
     }
 };
+
+typedef enum {
+    EXECUTE_SUCCESS,
+    EXECUTE_TABLE_FULL
+} ExecuteResult;
 
 typedef enum {
     META_COMMAND_SUCCESS,
@@ -163,3 +166,8 @@ void execute_statement(Statement* statement){
             break;
     }
 }
+
+ExecuteResult execute_insert(Statement* statement, Table* table){
+    return EXECUTE_SUCCESS;
+}
+
