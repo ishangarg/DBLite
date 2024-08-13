@@ -3,4 +3,5 @@ project(DBLite)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(DBLite main.cpp)
+add_executable(DBLite main.cpp
+        row.h)
