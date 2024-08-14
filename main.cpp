@@ -53,10 +53,13 @@ void close_input_buffer();
 MetaCommandResult do_meta_command(InputBuffer*);
 PrepareResult prepare_statement(InputBuffer*, Statement*);
 void execute_statement(Statement*);
+ExecuteResult execute_command(Statement*, Table*);
+
 
 
 
 int main() {
+    Table* table = new_table();
     InputBuffer* input_buffer = new_input_buffer();
     print_startup();
     while (true){
@@ -83,13 +86,23 @@ int main() {
         switch (prepare_statement(input_buffer, &statement)) {
             case (PREPARE_SUCCESS):
                 break;
+            case (PREPARE_SYNTAX_ERROR):
+                cout << "Syntax error! Could not parse statement" << endl;
+                continue;
             case (PREPARE_UNRECOGNIZED_STATEMENT):
                 cout << "Unrecognized keyword at start of " << input_buffer->buffer << endl;
                         continue;
 
         }
 
-        execute_statement(&statement);
+        switch (execute_command(&statement, table)) {
+            case (EXECUTE_SUCCESS):
+                cout << "Executed" << endl;
+                continue;
+            case (EXECUTE_TABLE_FULL):
+                cout << "Error: Table Full" << endl;
+                continue;
+        }
 
     }
 }
@@ -168,6 +181,30 @@ void execute_statement(Statement* statement){
 }
 
 ExecuteResult execute_insert(Statement* statement, Table* table){
+    if (table->num_rows >= TABLE_MAX_ROWS){
+        return EXECUTE_TABLE_FULL;
+    }
+    Row* row_to_insert = &(statement->row_to_insert);
+    serialize_row(row_to_insert, row_slot(table, table->num_rows));
+    table->num_rows += 1;
     return EXECUTE_SUCCESS;
+}
+
+ExecuteResult execute_select(Statement* statement, Table* table){
+    Row row;
+    for(uint32_t i = 0; i<table->num_rows; i++){
+        deserialize_row(row_slot(table, i), &row);
+        print_row(&row);
+    }
+    return EXECUTE_SUCCESS;
+}
+
+ExecuteResult  execute_command(Statement* statement, Table* table){
+    switch (statement->type) {
+        case STATEMENT_INSERT:
+            return execute_insert(statement, table);
+        case STATEMENT_SELECT:
+            return execute_select(statement, table);
+    }
 }
 

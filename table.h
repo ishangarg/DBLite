@@ -79,3 +79,7 @@ void free_table(Table* table){
     }
     free(table);
 }
+
+void print_row(Row* row){
+    std::cout << "(" << row->id << ", " << row->username << ", " << row->email << std::endl;
+}
