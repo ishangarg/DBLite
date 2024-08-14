@@ -81,5 +81,5 @@ void free_table(Table* table){
 }
 
 void print_row(Row* row){
-    std::cout << "(" << row->id << ", " << row->username << ", " << row->email << std::endl;
+    std::cout << "(" << row->id << ", " << row->username << ", " << row->email << ")" << std::endl;
 }
