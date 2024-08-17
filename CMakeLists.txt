@@ -4,4 +4,5 @@ project(DBLite)
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(DBLite main.cpp
-        table.h)
+        table.h
+        pager.h)
