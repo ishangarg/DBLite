@@ -29,6 +29,7 @@ typedef enum {
 
 typedef enum {
     PREPARE_SUCCESS,
+    PREPARE_NEGATIVE_ID,
     PREPARE_STRING_TOO_LONG,
     PREPARE_SYNTAX_ERROR,
     PREPARE_UNRECOGNIZED_STATEMENT
@@ -85,6 +86,12 @@ int main() {
         Statement statement;
         switch (prepare_statement(input_buffer, &statement)) {
             case (PREPARE_SUCCESS):
+                break;
+            case (PREPARE_NEGATIVE_ID):
+                cout << "ID can't be negative\n";
+                break;
+            case (PREPARE_STRING_TOO_LONG):
+                cout << "String Too Long\n";
                 break;
             case (PREPARE_SYNTAX_ERROR):
                 cout << "Syntax error! Could not parse statement" << endl;
@@ -153,13 +160,7 @@ MetaCommandResult do_meta_command(InputBuffer* input_buffer){
 
 PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement){
     if(strncmp(input_buffer->buffer, "insert", 6) == 0){
-        statement->type = STATEMENT_INSERT;
-        int args_assigned = sscanf(input_buffer->buffer, "insert %d %s %s", &(statement->row_to_insert.id),
-                                   statement->row_to_insert.username, statement->row_to_insert.email);
-        if (args_assigned < 3){
-            return PREPARE_SYNTAX_ERROR;
-        }
-        return PREPARE_SUCCESS;
+        return prepare_insert(input_buffer, statement);
     }
     if(strcmp(input_buffer->buffer, "select") == 0){
         statement->type = STATEMENT_SELECT;
@@ -220,6 +221,9 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement){
     }
 
     int id = atoi(id_string);
+    if (id < 0){
+        return PREPARE_NEGATIVE_ID;
+    }
     if (strlen(username) > COLUMN_USERNAME_SIZE){
         return PREPARE_STRING_TOO_LONG;
     }
