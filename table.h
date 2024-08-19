@@ -64,7 +64,7 @@ void* row_slot(Table* table, uint32_t row_num){
     return static_cast<uint32_t*>(page) + byte_offset;
 }
 
-Table* new_table(){
+Table* db_open(){
     Table* table = new Table();
     table->num_rows = 0;
     for(uint32_t i = 0; i<TABLE_MAX_PAGES; i++){

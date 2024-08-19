@@ -60,7 +60,7 @@ PrepareResult prepare_insert(InputBuffer*, Statement*);
 
 
 int main() {
-    Table* table = new_table();
+    Table* table = db_open();
     InputBuffer* input_buffer = new_input_buffer();
     print_startup();
     while (true){
