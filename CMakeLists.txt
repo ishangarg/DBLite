@@ -5,4 +5,5 @@ set(CMAKE_CXX_STANDARD 23)
 
 add_executable(DBLite main.cpp
         table.h
-        pager.h)
+        pager.h
+        constants.h)

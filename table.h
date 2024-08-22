@@ -2,12 +2,11 @@
 // Created by Ishan Garg on 12/08/24.
 //
 
+#include "constants.h"
+#include "pager.h"
 
 #define COLUMN_USERNAME_SIZE 32
 #define COLUMN_EMAIL_SIZE 255
-
-#define TABLE_MAX_PAGES 100
-
 
 
 typedef struct {
@@ -38,7 +37,7 @@ const uint32_t TABLE_MAX_ROWS = ROWS_PER_PAGE * TABLE_MAX_PAGES;
 
 typedef struct Table{
     uint32_t num_rows;
-    void* pages[TABLE_MAX_PAGES];
+    Pager* pager;
 };
 
 void serialize_row(Row* row, void* destination){
@@ -64,12 +63,12 @@ void* row_slot(Table* table, uint32_t row_num){
     return static_cast<uint32_t*>(page) + byte_offset;
 }
 
-Table* db_open(){
+Table* db_open(const char* filename){
+    Pager* pager = pager_open(filename);
+    uint32_t num_rows = pager->file_length/ROW_SIZE;
     Table* table = new Table();
-    table->num_rows = 0;
-    for(uint32_t i = 0; i<TABLE_MAX_PAGES; i++){
-        table->pages[i] = nullptr;
-    }
+    table->pager = pager;
+    table->num_rows = num_rows;
     return table;
 }
 
