@@ -53,10 +53,7 @@ void deserialize_row(void* source, Row* destination){
 
 void* row_slot(Table* table, uint32_t row_num){
     uint32_t page_num = row_num/ROWS_PER_PAGE;
-    void* page = table->pages[page_num];
-    if (page== nullptr){
-        page = table->pages[page_num] = malloc(PAGE_SIZE);
-    }
+    void* page = get_page(table->pager, page_num);
     uint32_t row_offset = row_num % ROWS_PER_PAGE;
     uint32_t byte_offset = row_offset * ROW_SIZE;
     return static_cast<uint32_t*>(page) + byte_offset;
@@ -71,12 +68,27 @@ Table* db_open(const char* filename){
     return table;
 }
 
-void free_table(Table* table){
-    for(int i = 0; table->pages[i]; i++){
-        free(table->pages[i]);
+void db_close(Table* table){
+    Pager* pager = table->pager;
+    uint32_t num_full_pages = table->num_rows/ROWS_PER_PAGE;
+
+    for(uint32_t i =0; i<num_full_pages; i++){
+        if (pager->pages[i] == nullptr){
+            continue;
+        }
+        pager_flush(pager, i, PAGE_SIZE); /*TODO: PagerFlush function*/
+        free(pager->pages[i]);
+        pager->pages[i] == nullptr;
     }
-    free(table);
+
 }
+
+//void free_table(Table* table){
+//    for(int i = 0; table->pages[i]; i++){
+//        free(table->pages[i]);
+//    }
+//    free(table);
+//}
 
 void print_row(Row* row){
     std::cout << "(" << row->id << ", " << row->username << ", " << row->email << ")" << std::endl;
